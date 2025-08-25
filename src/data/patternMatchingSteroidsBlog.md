@@ -123,7 +123,7 @@ Now let's see for the other problem, this one's a bit more manageable (relativel
 
 Eleven and a half days. Still bad, but at least it's not measured in months. People might actually wait for this one. But it's still bad.
 
-Okay, so brute force is out. But wait—Is there something that learnt while doing my Data Structures and Algorithms! Surely there's something useful there(otherwise what's the point)?
+Okay, so brute force is out. But wait—Is there something that I learnt while doing my Data Structures and Algorithms! Surely there's something useful there(otherwise what's the point)?
 
 I know the KMP algorithm! That piece of algorithmic elegance that does pattern matching in O(n+m) time. That's linear time! That's amazing!
 
@@ -135,7 +135,7 @@ What do I do now?
 
 *Let me just run the brute force while I think of better solutions...*
 
-## Enter the Trie
+## Experimenting with Trie
  
 So I'm sitting there, watching my CPU slowly die, when I remembered something from my competitive programming days. There's this data structure called a trie — basically a tree where each path from root to leaf spells out a word.
 
@@ -205,7 +205,7 @@ And it gets worse with overlapping gene sequences. Imagine we're looking for bot
 
 That's when I realized: the trie is great for dictionary lookups, but for multi-pattern match we need something more powerful.
  
-## Enter Aho-Corasick
+## The Aho-Corasick Method
  
 This is where Aho and Corasick showed up in 1975 and basically said, "You know what? Let's fix this properly."
 
@@ -363,15 +363,6 @@ defaultText: "ATCGATCG"
 defaultPattern: "TCG"
 :::
 
-This interactive demo reveals the **mathematical secret** behind pattern matching! Watch how:
-
-1. **Signal Encoding**: Each DNA character (A,T,G,C) becomes a binary signal vector
-2. **Sliding Window**: The pattern signals align at each position in the text  
-3. **Dot Product Magic**: Character matching = vector multiplication → this IS a dot product!
-4. **The Formula**: `Score = Σ(T_A × P_A) + Σ(T_T × P_T) + Σ(T_G × P_G) + Σ(T_C × P_C)`
-
-This mathematical transformation is what makes FFT-based pattern matching possible. Character comparisons become math operations!
-
 ## Wait, This Math Looks Familiar... 
 
 So we've converted our sliding window into this fancy math formula, but now what? Last I checked, this will still be O(N×M) since we're just matching, adding, and sliding. In fact, it's a little worse since now we're processing each character individually.
@@ -444,7 +435,7 @@ This interactive visualization shows how DNA sequences are converted to binary s
 So text over position is analogous to signals over time. Now what?
 
 
-## Enter the Frequency Domain (AKA "Let's Change Our Perspective")
+## The Frequency Domain (AKA "Let's Change Our Perspective")
 
 Now that we know text can be treated as signals and we need to find convolution, we can use some tricks that mathematicians have already discovered for us over the centuries. 
 
@@ -486,7 +477,7 @@ And *that* is what we're going to use to make our pattern matching blazingly(sor
 ### But Why Does This Work?
  
 <details>
-<summary><strong>Click for the FULL mathematical journey</strong></summary>
+<summary><strong>Click for the full mathematical journey!</strong></summary>
  
 <div class="math-details">
  
@@ -635,7 +626,7 @@ Remember, we need to find the convolution to get the number of matches at each p
 3. **Multiply them element wise** (this is where the convolution theorem shines!)
 4. **Transform back to time domain** using Inverse Fourier Transform
 
-And boom! We get a vector containing the number of character matches at each position.
+And that's that! We get a vector containing the number of character matches at each position.
 
 Let me break this down step by step:
 
