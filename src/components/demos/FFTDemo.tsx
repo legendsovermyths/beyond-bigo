@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -44,6 +44,10 @@ export default function FFTDemo({
   const [stepData, setStepData] = useState<StepData | null>(null);
   const [progress, setProgress] = useState(0);
   const [showAllSteps, setShowAllSteps] = useState(false);
+  const textInputRef = useRef<HTMLInputElement>(null);
+  const patternInputRef = useRef<HTMLInputElement>(null);
+  const textCursorPosition = useRef(0);
+  const patternCursorPosition = useRef(0);
 
   const bases = ['A', 'T', 'G', 'C'];
   const baseColors = ['#dc2626', '#2563eb', '#16a34a', '#d97706'];
@@ -257,6 +261,55 @@ export default function FFTDemo({
   }, [text, pattern]);
 
   const { cleanText, cleanPattern, paddedLength } = processInputs();
+
+  const handleTextKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const key = e.key.toLowerCase();
+    const validChars = ['a', 't', 'g', 'c', 'backspace', 'delete', 'tab', 'enter', 'escape', 'home', 'end', 'arrowleft', 'arrowright'];
+    
+    if (!validChars.includes(key)) {
+      e.preventDefault();
+      return;
+    }
+  };
+
+  const handlePatternKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const key = e.key.toLowerCase();
+    const validChars = ['a', 't', 'g', 'c', 'backspace', 'delete', 'tab', 'enter', 'escape', 'home', 'end', 'arrowleft', 'arrowright'];
+    
+    if (!validChars.includes(key)) {
+      e.preventDefault();
+      return;
+    }
+  };
+
+  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target;
+    textCursorPosition.current = input.selectionStart || 0;
+    const newValue = input.value.toUpperCase().replace(/[^ATGC]/g, '');
+    setText(newValue);
+  };
+
+  const handlePatternChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target;
+    patternCursorPosition.current = input.selectionStart || 0;
+    const newValue = input.value.toUpperCase().replace(/[^ATGC]/g, '');
+    setPattern(newValue);
+  };
+
+  // Restore cursor position after re-render
+  useEffect(() => {
+    if (textInputRef.current) {
+      const newPosition = Math.min(textCursorPosition.current, text.length);
+      textInputRef.current.setSelectionRange(newPosition, newPosition);
+    }
+  }, [text]);
+
+  useEffect(() => {
+    if (patternInputRef.current) {
+      const newPosition = Math.min(patternCursorPosition.current, pattern.length);
+      patternInputRef.current.setSelectionRange(newPosition, newPosition);
+    }
+  }, [pattern]);
 
   // Render step content
   const renderStepContent = (stepIndex?: number) => {
@@ -500,10 +553,12 @@ export default function FFTDemo({
         <div className="input-section">
           <Label htmlFor="fft-text-input">Text (DNA sequence):</Label>
           <Input
+            ref={textInputRef}
             id="fft-text-input"
             type="text"
             value={text}
-            onChange={(e) => setText(e.target.value.toUpperCase().replace(/[^ATGC]/g, ''))}
+            onChange={handleTextChange}
+            onKeyDown={handleTextKeyDown}
             placeholder="Enter DNA text (A,T,G,C)"
             className="sequence-input"
             maxLength={12}
@@ -513,10 +568,12 @@ export default function FFTDemo({
         <div className="input-section">
           <Label htmlFor="fft-pattern-input">Pattern:</Label>
           <Input
+            ref={patternInputRef}
             id="fft-pattern-input"
             type="text"
             value={pattern}
-            onChange={(e) => setPattern(e.target.value.toUpperCase().replace(/[^ATGC]/g, ''))}
+            onChange={handlePatternChange}
+            onKeyDown={handlePatternKeyDown}
             placeholder="Enter pattern"
             className="sequence-input"
             maxLength={6}

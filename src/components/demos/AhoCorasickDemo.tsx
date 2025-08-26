@@ -298,6 +298,10 @@ export default function AhoCorasickDemo({
   const [statusMessage, setStatusMessage] = useState('Add patterns to begin');
   const [forceUpdate, setForceUpdate] = useState(0);
   const animationRef = useRef<NodeJS.Timeout>();
+  const textInputRef = useRef<HTMLInputElement>(null);
+  const patternInputRef = useRef<HTMLInputElement>(null);
+  const textCursorPosition = useRef(0);
+  const patternCursorPosition = useRef(0);
 
   const calculatePositions = () => {
     const nodes = ac.getAllNodes();
@@ -441,6 +445,55 @@ export default function AhoCorasickDemo({
     setForceUpdate(prev => prev + 1);
   };
 
+  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target;
+    textCursorPosition.current = input.selectionStart || 0;
+    const newValue = input.value.toUpperCase().replace(/[^ATGC]/g, '');
+    setInputText(newValue);
+  };
+
+  const handlePatternChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target;
+    patternCursorPosition.current = input.selectionStart || 0;
+    const newValue = input.value.toUpperCase().replace(/[^ATGC]/g, '');
+    setPatternInput(newValue);
+  };
+
+  const handleTextKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const key = e.key.toLowerCase();
+    const validChars = ['a', 't', 'g', 'c', 'backspace', 'delete', 'tab', 'enter', 'escape', 'home', 'end', 'arrowleft', 'arrowright'];
+    
+    if (!validChars.includes(key)) {
+      e.preventDefault();
+      return;
+    }
+  };
+
+  const handlePatternKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const key = e.key.toLowerCase();
+    const validChars = ['a', 't', 'g', 'c', 'backspace', 'delete', 'tab', 'enter', 'escape', 'home', 'end', 'arrowleft', 'arrowright'];
+    
+    if (!validChars.includes(key)) {
+      e.preventDefault();
+      return;
+    }
+  };
+
+  // Restore cursor position after re-render
+  useEffect(() => {
+    if (textInputRef.current) {
+      const newPosition = Math.min(textCursorPosition.current, inputText.length);
+      textInputRef.current.setSelectionRange(newPosition, newPosition);
+    }
+  }, [inputText]);
+
+  useEffect(() => {
+    if (patternInputRef.current) {
+      const newPosition = Math.min(patternCursorPosition.current, patternInput.length);
+      patternInputRef.current.setSelectionRange(newPosition, newPosition);
+    }
+  }, [patternInput]);
+
   const renderTextVisualization = () => {
     if (!inputText) return null;
     
@@ -474,10 +527,12 @@ export default function AhoCorasickDemo({
         <div className="input-section">
           <Label htmlFor="ac-text-input">Search Text:</Label>
           <Input
+            ref={textInputRef}
             id="ac-text-input"
             type="text"
             value={inputText}
-            onChange={(e) => setInputText(e.target.value.toUpperCase().replace(/[^ATGC]/g, ''))}
+            onChange={handleTextChange}
+            onKeyDown={handleTextKeyDown}
             placeholder="Type DNA sequence to search through"
             maxLength={50}
             className="text-input"
@@ -487,10 +542,12 @@ export default function AhoCorasickDemo({
         <div className="pattern-section">
           <Label htmlFor="pattern-input">Add Pattern:</Label>
           <Input
+            ref={patternInputRef}
             id="pattern-input"
             type="text"
             value={patternInput}
-            onChange={(e) => setPatternInput(e.target.value.toUpperCase().replace(/[^ATGC]/g, ''))}
+            onChange={handlePatternChange}
+            onKeyDown={handlePatternKeyDown}
             placeholder="Type DNA pattern (A, T, G, C)"
             maxLength={20}
             className="pattern-input"

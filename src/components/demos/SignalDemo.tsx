@@ -11,6 +11,8 @@ export default function SignalDemo({
 }: SignalDemoProps) {
   const [sequence, setSequence] = useState(defaultSequence);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const sequenceInputRef = useRef<HTMLInputElement>(null);
+  const sequenceCursorPosition = useRef(0);
 
   // Generate signal data (1 for G, 0 for others)
   const generateSignal = (dnaSequence: string): number[] => {
@@ -179,10 +181,30 @@ export default function SignalDemo({
     return () => window.removeEventListener('resize', handleResize);
   }, [sequence]);
 
-  const handleSequenceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.toUpperCase().replace(/[^ATGC]/g, '');
-    setSequence(value);
+  const handleSequenceKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const key = e.key.toLowerCase();
+    const validChars = ['a', 't', 'g', 'c', 'backspace', 'delete', 'tab', 'enter', 'escape', 'home', 'end', 'arrowleft', 'arrowright'];
+    
+    if (!validChars.includes(key)) {
+      e.preventDefault();
+      return;
+    }
   };
+
+  const handleSequenceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target;
+    sequenceCursorPosition.current = input.selectionStart || 0;
+    const newValue = input.value.toUpperCase().replace(/[^ATGC]/g, '');
+    setSequence(newValue);
+  };
+
+  // Restore cursor position after re-render
+  useEffect(() => {
+    if (sequenceInputRef.current) {
+      const newPosition = Math.min(sequenceCursorPosition.current, sequence.length);
+      sequenceInputRef.current.setSelectionRange(newPosition, newPosition);
+    }
+  }, [sequence]);
 
   const signal = generateSignal(sequence);
   const cleanSequence = sequence.toUpperCase().replace(/[^ATGC]/g, '');
@@ -193,10 +215,12 @@ export default function SignalDemo({
       <div className="controls">
         <Label htmlFor="signal-dna-input">DNA Sequence:</Label>
         <Input
+          ref={sequenceInputRef}
           id="signal-dna-input"
           type="text"
           value={sequence}
           onChange={handleSequenceChange}
+          onKeyDown={handleSequenceKeyDown}
           placeholder="Enter DNA sequence (A,T,G,C)"
           className="sequence-input"
           maxLength={15}

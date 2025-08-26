@@ -156,6 +156,10 @@ export default function TrieDemo({ defaultSequences = ['ATCG', 'ATCGA', 'ATCGAT'
   const [stats, setStats] = useState<TrieStats>({ wordCount: 0, nodeCount: 0, memorySaving: 0 });
   const [forceUpdate, setForceUpdate] = useState(0);
   const animationRef = useRef<NodeJS.Timeout>();
+  const sequenceInputRef = useRef<HTMLInputElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const sequenceCursorPosition = useRef(0);
+  const searchCursorPosition = useRef(0);
 
   // Initialize with default sequences
   useEffect(() => {
@@ -283,6 +287,55 @@ export default function TrieDemo({ defaultSequences = ['ATCG', 'ATCGA', 'ATCGAT'
     setForceUpdate(prev => prev + 1);
   };
 
+  const handleSequenceKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const key = e.key.toLowerCase();
+    const validChars = ['a', 't', 'g', 'c', 'backspace', 'delete', 'tab', 'enter', 'escape', 'home', 'end', 'arrowleft', 'arrowright'];
+    
+    if (!validChars.includes(key)) {
+      e.preventDefault();
+      return;
+    }
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const key = e.key.toLowerCase();
+    const validChars = ['a', 't', 'g', 'c', 'backspace', 'delete', 'tab', 'enter', 'escape', 'home', 'end', 'arrowleft', 'arrowright'];
+    
+    if (!validChars.includes(key)) {
+      e.preventDefault();
+      return;
+    }
+  };
+
+  const handleSequenceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target;
+    sequenceCursorPosition.current = input.selectionStart || 0;
+    const newValue = input.value.toUpperCase().replace(/[^ATGC]/g, '');
+    setInputValue(newValue);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target;
+    searchCursorPosition.current = input.selectionStart || 0;
+    const newValue = input.value.toUpperCase().replace(/[^ATGC]/g, '');
+    setSearchValue(newValue);
+  };
+
+  // Restore cursor position after re-render
+  useEffect(() => {
+    if (sequenceInputRef.current) {
+      const newPosition = Math.min(sequenceCursorPosition.current, inputValue.length);
+      sequenceInputRef.current.setSelectionRange(newPosition, newPosition);
+    }
+  }, [inputValue]);
+
+  useEffect(() => {
+    if (searchInputRef.current) {
+      const newPosition = Math.min(searchCursorPosition.current, searchValue.length);
+      searchInputRef.current.setSelectionRange(newPosition, newPosition);
+    }
+  }, [searchValue]);
+
   const { svgWidth, svgHeight } = calculatePositions();
   const nodes = trie.getAllNodes();
   const edges: { from: TrieNode; to: TrieNode }[] = [];
@@ -301,10 +354,12 @@ export default function TrieDemo({ defaultSequences = ['ATCG', 'ATCGA', 'ATCGAT'
         <div className="input-section">
           <Label htmlFor="trie-sequence-input">Add Sequence:</Label>
           <Input
+            ref={sequenceInputRef}
             id="trie-sequence-input"
             type="text"
             value={inputValue}
-            onChange={(e) => setInputValue(e.target.value.toUpperCase().replace(/[^ATGC]/g, ''))}
+            onChange={handleSequenceChange}
+            onKeyDown={handleSequenceKeyDown}
             placeholder="Type DNA sequence (A, T, G, C)"
             maxLength={20}
             className="sequence-input"
@@ -317,10 +372,12 @@ export default function TrieDemo({ defaultSequences = ['ATCG', 'ATCGA', 'ATCGAT'
         <div className="search-section">
           <Label htmlFor="trie-search-input">Search:</Label>
           <Input
+            ref={searchInputRef}
             id="trie-search-input"
             type="text"
             value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value.toUpperCase().replace(/[^ATGC]/g, ''))}
+            onChange={handleSearchChange}
+            onKeyDown={handleSearchKeyDown}
             placeholder="Search for sequence"
             maxLength={20}
             className="search-input"

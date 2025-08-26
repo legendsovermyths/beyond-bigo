@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -39,6 +39,10 @@ export default function SlideMultiplyDemo({
   const [currentStep, setCurrentStep] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [calculations, setCalculations] = useState<CalculationStep[]>([]);
+  const textInputRef = useRef<HTMLInputElement>(null);
+  const patternInputRef = useRef<HTMLInputElement>(null);
+  const textCursorPosition = useRef(0);
+  const patternCursorPosition = useRef(0);
 
   // Calculate signal encoding and dot products for sliding window
   const calculateSteps = (textStr: string, patternStr: string): CalculationStep[] => {
@@ -163,6 +167,55 @@ export default function SlideMultiplyDemo({
     }
   };
 
+  const handleTextKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const key = e.key.toLowerCase();
+    const validChars = ['a', 't', 'g', 'c', 'backspace', 'delete', 'tab', 'enter', 'escape', 'home', 'end', 'arrowleft', 'arrowright'];
+    
+    if (!validChars.includes(key)) {
+      e.preventDefault();
+      return;
+    }
+  };
+
+  const handlePatternKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const key = e.key.toLowerCase();
+    const validChars = ['a', 't', 'g', 'c', 'backspace', 'delete', 'tab', 'enter', 'escape', 'home', 'end', 'arrowleft', 'arrowright'];
+    
+    if (!validChars.includes(key)) {
+      e.preventDefault();
+      return;
+    }
+  };
+
+  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target;
+    textCursorPosition.current = input.selectionStart || 0;
+    const newValue = input.value.toUpperCase().replace(/[^ATGC]/g, '');
+    setText(newValue);
+  };
+
+  const handlePatternChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target;
+    patternCursorPosition.current = input.selectionStart || 0;
+    const newValue = input.value.toUpperCase().replace(/[^ATGC]/g, '');
+    setPattern(newValue);
+  };
+
+  // Restore cursor position after re-render
+  useEffect(() => {
+    if (textInputRef.current) {
+      const newPosition = Math.min(textCursorPosition.current, text.length);
+      textInputRef.current.setSelectionRange(newPosition, newPosition);
+    }
+  }, [text]);
+
+  useEffect(() => {
+    if (patternInputRef.current) {
+      const newPosition = Math.min(patternCursorPosition.current, pattern.length);
+      patternInputRef.current.setSelectionRange(newPosition, newPosition);
+    }
+  }, [pattern]);
+
   const currentCalculation = calculations[currentStep];
 
   return (
@@ -172,10 +225,12 @@ export default function SlideMultiplyDemo({
         <div className="input-section">
           <Label htmlFor="slide-text-input">Search Text:</Label>
           <Input
+            ref={textInputRef}
             id="slide-text-input"
             type="text"
             value={text}
-            onChange={(e) => setText(e.target.value)}
+            onChange={handleTextChange}
+            onKeyDown={handleTextKeyDown}
             placeholder="Enter DNA text (A,T,G,C)"
             className="text-input"
             maxLength={20}
@@ -184,10 +239,12 @@ export default function SlideMultiplyDemo({
         <div className="input-section">
           <Label htmlFor="slide-pattern-input">Pattern:</Label>
           <Input
+            ref={patternInputRef}
             id="slide-pattern-input"
             type="text"
             value={pattern}
-            onChange={(e) => setPattern(e.target.value)}
+            onChange={handlePatternChange}
+            onKeyDown={handlePatternKeyDown}
             placeholder="Enter DNA pattern"
             className="pattern-input"
             maxLength={10}
