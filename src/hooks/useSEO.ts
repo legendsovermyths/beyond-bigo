@@ -1,5 +1,39 @@
 import { useEffect } from 'react';
-import { SEOData, applySEOData } from '@/lib/seo';
+
+export interface SEOData {
+  title?: string;
+  description?: string;
+  image?: string;
+  url?: string;
+}
+
+/**
+ * Apply SEO data to the document
+ */
+export function applySEOData(seoData: SEOData) {
+  if (seoData.title) {
+    document.title = seoData.title;
+  }
+  
+  if (seoData.description) {
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute('content', seoData.description);
+    }
+  }
+  
+  if (seoData.image) {
+    const ogImage = document.querySelector('meta[property="og:image"]');
+    if (ogImage) {
+      ogImage.setAttribute('content', seoData.image);
+    }
+    
+    const twitterImage = document.querySelector('meta[name="twitter:image"]');
+    if (twitterImage) {
+      twitterImage.setAttribute('content', seoData.image);
+    }
+  }
+}
 
 /**
  * Hook to apply SEO data to the document
