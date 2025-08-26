@@ -48,6 +48,10 @@ export default function SlideMultiplyDemo({
     
     if (!textUpper || !patternUpper) return steps;
 
+    if (textUpper.length < patternUpper.length) {
+        return steps; // Return empty array gracefully
+      }
+
     // DNA character types to encode
     const charTypes = ['A', 'T', 'G', 'C'];
 
@@ -288,7 +292,7 @@ export default function SlideMultiplyDemo({
                     </span>
                   ))}
                   {/* Trailing spacers */}
-                  {Array(text.length - currentCalculation.position - pattern.length).fill(null).map((_, i) => (
+                  {Array(Math.max(0, text.length - currentCalculation.position - pattern.length)).fill(null).map((_, i) => (
                     <span key={`trail-${i}`} className="char spacer">·</span>
                   ))}
                 </div>
@@ -342,7 +346,7 @@ export default function SlideMultiplyDemo({
                     </span>
                   ))}
                   {/* Trailing spacers */}
-                  {Array(text.length - currentCalculation.position - pattern.length).fill(null).map((_, i) => (
+                  {Array(Math.max(0, text.length - currentCalculation.position - pattern.length)).fill(null).map((_, i) => (
                     <span key={`trail-${i}`} className="signal-bit spacer">·</span>
                   ))}
                 </div>
