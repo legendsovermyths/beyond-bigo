@@ -137,7 +137,7 @@ What do I do now?
 
 ## Experimenting with Trie
  
-So I'm sitting there, watching my CPU slowly die, when I remembered something from my competitive programming days. There's this data structure called a trie — basically a tree where each path from root to leaf spells out a word.
+So I'm sitting there, watching my CPU slowly die, when I remembered something from my college days. There's this data structure called a trie — basically a tree where each path from root to leaf spells out a word.
 
 But let me explain this properly because it's actually brilliant.
 
@@ -180,7 +180,7 @@ Well... no. Not really.
  
 ## Wait, There's a Problem
 
-Now here's the thing about tries: they're absolutely amazing for checking if a word exists in a dictionary. Got a word? Walk down the trie, hit an end marker, boom, it's there. Beautiful.
+Now here's the thing about tries: they're amazing for checking if a word exists in a dictionary. Got a word? Walk down the trie, hit an end marker, boom, it's there. Beautiful.
 
 But our problem is different. We're not asking "does this word exist?" We're asking "does our billion-character DNA sequence contain any of these 10,000 patterns?" And that's where tries get... problematic.
 
